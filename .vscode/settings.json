@@ -1,0 +1,33 @@
+{
+    "files.associations": {
+        "console.h": "c",
+        "mmu.h": "c",
+        "memlayout.h": "c",
+        "stdio.h": "c",
+        "assert.h": "c",
+        "error.h": "c",
+        "types.h": "c",
+        "string.h": "c",
+        "pmap.h": "c",
+        "pgtable-2level-hwdef.h": "c",
+        "monitor.h": "c",
+        "syscall.h": "c",
+        "kdebug.h": "c",
+        "lib.h": "c",
+        "env.h": "c",
+        "sched.h": "c",
+        "imx6ul.h": "c",
+        "core_ca7.h": "c",
+        "fsl_common.h": "c",
+        "mcimx6y2.h": "c",
+        "arm.h": "c",
+        "log.h": "c",
+        "imx_uart.h": "c",
+        "sd_card.h": "c",
+        "imx6ul_iomuxc.h": "c",
+        "timer.h": "c",
+        "imx_usdhc.h": "c",
+        "args.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
+}

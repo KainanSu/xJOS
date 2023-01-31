@@ -1,0 +1,93 @@
+#
+# Makefile fragment for JOS kernel.
+# This is NOT a complete makefile;
+# you must run GNU make in the top-level directory
+# where the GNUmakefile is located.
+#
+
+OBJDIRS += kern
+
+# -ffreestanding
+KERN_LDFLAGS := $(LDFLAGS) -T kern/kernel.ld -nostdlib
+
+KERN_SRCFILES :=	kern/entry.S \
+			kern/entrypgdir.c \
+			kern/init.c \
+			kern/console.c \
+			kern/printf.c \
+			lib/printfmt.c \
+			lib/readline.c \
+			lib/string.c \
+			kern/monitor.c \
+			kern/kdebug.c \
+			kern/pmap.c \
+			lib/syscall.c\
+			kern/env.c\
+			kern/trap.c \
+			kern/sched.c \
+			kern/bsp_clk.c \
+			kern/bsp_gic.c \
+			kern/bsp_epit.c \
+
+# Only build files if they exist.
+KERN_SRCFILES := $(wildcard $(KERN_SRCFILES))
+
+# Binary program images to embed within the kernel.
+KERN_BINFILES :=	user/hello \
+			user/procA \
+			user/procB \
+			user/testfork\
+			user/primes\
+			user/faultalloc \
+			user/testfile \
+			user/init \
+			# user/sh \
+			# user/buggyhello2 \
+			# user/evilhello \
+			# user/testbss \
+			# user/divzero \
+			# user/breakpoint \
+			# user/softint \
+			# user/badsegment \
+			# user/faultread \
+			# user/faultreadkernel \
+			# user/faultwrite \
+			# user/faultwritekernel
+KERN_BINFILES += fs/fs
+
+KERN_OBJFILES := $(patsubst %.c, $(OBJDIR)/%.o, $(KERN_SRCFILES))
+KERN_OBJFILES := $(patsubst %.S, $(OBJDIR)/%.o, $(KERN_OBJFILES))
+KERN_OBJFILES := $(patsubst %.s, $(OBJDIR)/%.o, $(KERN_OBJFILES))
+KERN_OBJFILES := $(patsubst $(OBJDIR)/lib/%, $(OBJDIR)/kern/%, $(KERN_OBJFILES))
+KERN_BINFILES := $(patsubst %, $(OBJDIR)/%, $(KERN_BINFILES))
+
+# How to build kernel object files
+$(OBJDIR)/kern/%.o: kern/%.c $(OBJDIR)/.vars.KERN_CFLAGS
+	@echo + cc $<
+	@mkdir -p $(@D)
+	$(V)$(CC) -nostdinc $(KERN_CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/kern/%.o: kern/%.S $(OBJDIR)/.vars.KERN_CFLAGS
+	@echo + as $<
+	@mkdir -p $(@D)
+	$(V)$(CC) -nostdinc $(KERN_CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/kern/%.o: kern/%.s $(OBJDIR)/.vars.KERN_CFLAGS
+	@echo + as $<
+	@mkdir -p $(@D)
+	$(V)$(CC) -nostdinc $(KERN_CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/kern/%.o: lib/%.c $(OBJDIR)/.vars.KERN_CFLAGS
+	@echo + cc $<
+	@mkdir -p $(@D)
+	$(V)$(CC) -nostdinc $(KERN_CFLAGS) -c -o $@ $<
+
+# How to build the kernel itself
+# $(V)$(LD) -o $@ $(KERN_LDFLAGS) $(KERN_OBJFILES) $(GCC_LIB) -b binary $(KERN_BINFILES)
+$(OBJDIR)/kern/kernel: $(KERN_OBJFILES) $(KERN_BINFILES) kern/kernel.ld $(OBJDIR)/.vars.KERN_LDFLAGS
+	@echo + ld $@
+	$(V)$(LD) -o $@ $(KERN_LDFLAGS) $(KERN_OBJFILES) $(GCC_LIB) -b binary $(KERN_BINFILES)
+	$(V)$(OBJDUMP) -S $@ > $@.asm
+	$(V)$(NM) -n $@ > $@.sym
+
+all: $(OBJDIR)/kern/kernel
